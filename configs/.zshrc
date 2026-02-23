@@ -54,7 +54,6 @@ alias lt2='eza --tree --level=2 --icons --git-ignore -I "node_modules|.git"'
 
 # CLI 도구
 alias oc='opencode'
-alias claude-mem='bun "$HOME/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
 
 # =============================================================================
 # Completions
