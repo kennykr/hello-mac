@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# 백업 파일 (install.sh가 기존 파일을 .bak으로 백업)
+*.bak
+
+# 민감 정보
+.env
+.env.*
+*.local
