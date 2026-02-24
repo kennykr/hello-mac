@@ -145,6 +145,30 @@ else
   fi
 fi
 
+# --- OpenUsage 설치 헬퍼 (Homebrew cask 미지원, DMG 설치) ---
+install_openusage() {
+  if [ -d "/Applications/OpenUsage.app" ]; then
+    skip "OpenUsage.app"
+    return
+  fi
+  info "OpenUsage 최신 버전 확인 중..."
+  local arch
+  arch="$(uname -m)"
+  if [[ "$arch" == "arm64" ]]; then
+    arch="aarch64"
+  else
+    arch="x64"
+  fi
+  local dmg_url
+  dmg_url="$(curl -fsSL https://api.github.com/repos/robinebers/openusage/releases/latest \
+    | grep "browser_download_url.*${arch}.dmg" | head -1 | cut -d '"' -f 4)"
+  if [ -z "$dmg_url" ]; then
+    echo "  -> ERROR: OpenUsage DMG URL을 찾을 수 없습니다."
+    return 1
+  fi
+  run "bash '$DOTFILES_DIR/scripts/install_dmg.sh' '$dmg_url' 'OpenUsage.app'"
+}
+
 # --- Monoplex KR Nerd 설치 헬퍼 (Homebrew cask 미지원) ---
 install_monoplex_kr_nerd() {
   if ls ~/Library/Fonts/MonoplexKRNerd-Regular.ttf &>/dev/null; then
@@ -243,6 +267,11 @@ else
   fi
 
   # Apps — 하나씩 설치
+  if ask_install "Docker Desktop" "컨테이너 기반 개발 환경 (Docker Engine, Docker Compose, kubectl 포함)"; then
+    INSTALL_APPS=true
+    run "brew install --cask docker"
+  fi
+
   if ask_install "Visual Studio Code" "Microsoft의 코드 에디터 (확장 기능, 터미널, Git 통합)"; then
     INSTALL_APPS=true
     run "brew install --cask visual-studio-code"
@@ -252,10 +281,22 @@ else
     INSTALL_APPS=true
     run "brew install --cask ghostty"
   fi
+
 fi
 
 # =============================================================================
-# 4. Oh My Zsh + Shell Theme
+# 4. 수동 설치 앱 (Homebrew cask 미지원)
+# =============================================================================
+if ! $INTERACTIVE; then
+  install_openusage
+else
+  if ask_install "OpenUsage" "AI 코딩 도구 사용량 추적 메뉴바 앱 (Cursor, Claude Code 등)"; then
+    install_openusage
+  fi
+fi
+
+# =============================================================================
+# 5. Oh My Zsh + Shell Theme
 # =============================================================================
 INSTALL_SHELL_THEME=true
 
@@ -284,7 +325,7 @@ if $INSTALL_SHELL_THEME; then
 fi
 
 # =============================================================================
-# 5. asdf 플러그인 및 런타임
+# 6. asdf 플러그인 및 런타임
 # =============================================================================
 INSTALL_RUNTIME=true
 
@@ -317,7 +358,7 @@ if $INSTALL_RUNTIME; then
 fi
 
 # =============================================================================
-# 6. 심볼릭 링크 생성
+# 7. 심볼릭 링크 생성
 # =============================================================================
 info "설정 파일 심볼릭 링크 생성..."
 
@@ -357,7 +398,7 @@ else
 fi
 
 # =============================================================================
-# 7. Git 설정
+# 8. Git 설정
 # =============================================================================
 if $INTERACTIVE; then
   echo ""
@@ -393,7 +434,7 @@ if $INTERACTIVE; then
 fi
 
 # =============================================================================
-# 8. VSCode 설정 (인터랙티브 전용)
+# 9. VSCode 설정 (인터랙티브 전용)
 # =============================================================================
 if $INTERACTIVE && command -v code &>/dev/null; then
   VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
@@ -408,7 +449,7 @@ if $INTERACTIVE && command -v code &>/dev/null; then
 fi
 
 # =============================================================================
-# 9. macOS 시스템 설정
+# 10. macOS 시스템 설정
 # =============================================================================
 NEED_DOCK_RESTART=false
 NEED_FINDER_RESTART=false
@@ -454,7 +495,7 @@ if $NEED_DOCK_RESTART; then run "killall Dock 2>/dev/null || true"; fi
 if $NEED_FINDER_RESTART; then run "killall Finder 2>/dev/null || true"; fi
 
 # =============================================================================
-# 10. ~/.zshrc.local 템플릿 생성
+# 11. ~/.zshrc.local 템플릿 생성
 # =============================================================================
 if [ ! -f "$HOME/.zshrc.local" ]; then
   info "~/.zshrc.local 템플릿 생성..."
@@ -474,7 +515,7 @@ else
 fi
 
 # =============================================================================
-# 11. 완료
+# 12. 완료
 # =============================================================================
 echo ""
 echo "========================================="

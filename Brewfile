@@ -33,5 +33,6 @@ cask "font-d2coding-nerd-font"
 cask "font-sarasa-gothic"
 
 # --- Apps ---
+cask "docker"             # Docker Desktop (컨테이너 런타임)
 cask "visual-studio-code"
 cask "ghostty"
