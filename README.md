@@ -56,17 +56,34 @@ hello-mac/
 ├── scripts/
 │   └── install_dmg.sh      # DMG 앱 설치 헬퍼
 ├── configs/
-│   ├── .zshrc              # Zsh 설정
-│   ├── .p10k.zsh           # Powerlevel10k 테마
+│   ├── zshrc.theme         # zplug + Powerlevel10k 설정 (append)
+│   ├── .p10k.zsh           # Powerlevel10k 테마 (-f 모드 전용)
 │   ├── .gitconfig          # Git 사용자 설정
 │   ├── .tool-versions      # asdf 글로벌 버전
-│   ├── ghostty/config      # Ghostty 터미널 설정
+│   ├── ghostty/config      # Ghostty 터미널 설정 (→ ~/.config/ghostty/)
 │   └── vscode/
 │       ├── settings.json   # VSCode 에디터 설정
 │       └── keybindings.json
 ├── .gitignore
 └── README.md
 ```
+
+## 🔄 설치 순서
+
+| #   | 섹션                    | `-f` 모드                                 | 인터랙티브 모드                                    |
+| --- | ----------------------- | ----------------------------------------- | -------------------------------------------------- |
+| 1   | Xcode CLT               | 자동 설치                                 | 자동 설치                                          |
+| 2   | Homebrew                | 자동 설치                                 | 자동 설치                                          |
+| 3   | Oh My Zsh + Shell Theme | zplug + Oh My Zsh 설치                    | 설치 여부 선택                                     |
+| 4   | Homebrew 패키지         | Brewfile 일괄 설치                        | 카테고리/항목별 선택                               |
+| 5   | 수동 설치 앱            | OpenUsage 자동 설치                       | 설치 여부 선택                                     |
+| 6   | asdf 런타임             | `.tool-versions` 복사 + 설치              | 설치 여부 선택                                     |
+| 7   | .zshrc 설정             | 테마 + 전체 설정 append, `.p10k.zsh` 복사 | 테마 + 설치한 도구만 append, `p10k configure` 실행 |
+| 8   | 설정 파일 복사          | .gitconfig, Ghostty, VSCode 복사          | Ghostty만 (Apps 설치 시)                           |
+| 9   | Git 설정                | `.gitconfig` 복사                         | 이름/이메일 입력                                   |
+| 10  | VSCode 설정             | 8번에서 처리                              | 설치 여부 선택 (기본 N)                            |
+| 11  | macOS 설정              | 전체 적용                                 | 항목별 선택                                        |
+| 12  | `.zshrc.local`          | 템플릿 생성                               | 동일                                               |
 
 ## 🔒 민감 정보
 

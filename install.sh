@@ -11,6 +11,14 @@ DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 DRY_RUN=false
 INTERACTIVE=true
 
+# --- 설치 플래그 ---
+INSTALL_SHELL_THEME=true
+INSTALL_CORE_CLI=true
+INSTALL_OPENCODE=true
+INSTALL_DOCKER=true
+INSTALL_APPS=false
+INSTALL_RUNTIME=true
+
 # --- 플래그 파싱 ---
 for arg in "$@"; do
   case "$arg" in
@@ -41,43 +49,28 @@ run()   {
   fi
 }
 
-backup_and_link() {
+backup_and_copy() {
   local src="$1"
   local dest="$2"
-  local backup_path
 
-  if [ -L "$dest" ]; then
-    local current_target
-    current_target="$(readlink "$dest")"
-    if [ "$current_target" = "$src" ]; then
-      skip "$dest -> $src"
-      return
-    fi
-    info "기존 심볼릭 링크 제거: $dest"
-    run "rm '$dest'"
-  elif [ -e "$dest" ]; then
-    backup_path="${dest}.bak"
-    if [ -e "$backup_path" ] || [ -L "$backup_path" ]; then
-      local ts suffix
-      ts="$(date +%Y%m%d-%H%M%S)"
-      suffix=0
-      backup_path="${dest}.bak.${ts}"
-      while [ -e "$backup_path" ] || [ -L "$backup_path" ]; do
-        suffix=$((suffix + 1))
-        backup_path="${dest}.bak.${ts}.${suffix}"
-      done
-    fi
-
-    info "기존 파일 백업: $dest -> $backup_path"
-    run "mv '$dest' '$backup_path'"
+  if [ -e "$dest" ]; then
+    info "기존 파일 백업: $dest -> ${dest}.bak"
+    run "mv '$dest' '${dest}.bak'"
   fi
 
-  info "심볼릭 링크 생성: $dest -> $src"
-  run "ln -s '$src' '$dest'"
+  info "설정 파일 복사: $src -> $dest"
+  run "cp '$src' '$dest'"
 }
 
-# ask_install — 인터랙티브 모드(기본)에서 카테고리별 설치 여부를 묻는다
-# -f 모드에서는 항상 true(0)를 반환
+# append_to_zshrc — .zshrc에 블록 추가 (중복 방지)
+append_to_zshrc() {
+  if $DRY_RUN; then
+    echo "  [dry-run] .zshrc에 추가: $(echo "$1" | head -1)..."
+  else
+    printf '\n%s\n' "$1" >> "$HOME/.zshrc"
+  fi
+}
+
 ask_install() {
   local category="$1"
   local description="$2"
@@ -133,7 +126,6 @@ if command -v brew &>/dev/null; then
 else
   info "Homebrew 설치 중..."
   run '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
-  # Apple Silicon 경로 설정
   if [[ "$(uname -m)" == "arm64" ]]; then
     if $DRY_RUN; then
       echo "  [dry-run] Homebrew shellenv 적용 건너뜀"
@@ -145,7 +137,8 @@ else
   fi
 fi
 
-# --- OpenUsage 설치 헬퍼 (Homebrew cask 미지원, DMG 설치) ---
+# --- 설치 헬퍼 함수 ---
+
 install_openusage() {
   if [ -d "/Applications/OpenUsage.app" ]; then
     skip "OpenUsage.app"
@@ -169,7 +162,6 @@ install_openusage() {
   run "bash '$DOTFILES_DIR/scripts/install_dmg.sh' '$dmg_url' 'OpenUsage.app'"
 }
 
-# --- Monoplex KR Nerd 설치 헬퍼 (Homebrew cask 미지원) ---
 install_monoplex_kr_nerd() {
   if ls ~/Library/Fonts/MonoplexKRNerd-Regular.ttf &>/dev/null; then
     skip "Monoplex KR Nerd (~/Library/Fonts/)"
@@ -185,28 +177,52 @@ install_monoplex_kr_nerd() {
 }
 
 # =============================================================================
-# 3. Homebrew 패키지
+# 3. Oh My Zsh + Shell Theme
 # =============================================================================
-INSTALL_APPS=false
+if $INTERACTIVE; then
+  if ask_install "Shell Theme" \
+    "Oh My Zsh + zplug + Powerlevel10k — 쉘 테마 및 플러그인"; then
+    INSTALL_SHELL_THEME=true
+  else
+    INSTALL_SHELL_THEME=false
+  fi
 
+  if $INSTALL_SHELL_THEME; then
+    run "brew install zplug"
+  fi
+fi
+
+if $INSTALL_SHELL_THEME; then
+  info "Oh My Zsh 확인..."
+  if [ -d "$HOME/.oh-my-zsh" ]; then
+    skip "Oh My Zsh"
+  else
+    info "Oh My Zsh 설치 중..."
+    run 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
+  fi
+fi
+
+# =============================================================================
+# 4. Homebrew 패키지
+# =============================================================================
 if ! $INTERACTIVE; then
-  # --- -f 모드: Brewfile 일괄 설치 ---
   info "Homebrew 패키지 설치 (Brewfile)..."
   run "brew bundle --file='$DOTFILES_DIR/Brewfile'"
   install_monoplex_kr_nerd
   INSTALL_APPS=true
 else
-  # --- 인터랙티브 모드: 카테고리별 개별 설치 ---
-
-  # Core CLI Tools — 통으로 설치
+  # Core CLI Tools
   if ask_install "Core CLI Tools" \
     "asdf(런타임 버전 관리), coreutils(GNU 핵심 유틸리티), eza(ls 대체), gh(GitHub CLI), gnupg(GPG 암호화)"; then
+    INSTALL_CORE_CLI=true
     for pkg in asdf coreutils eza gh gnupg; do
       run "brew install $pkg"
     done
+  else
+    INSTALL_CORE_CLI=false
   fi
 
-  # Utilities — 하나씩 설치
+  # Utilities
   if ask_install "lazygit" "터미널에서 Git 상태 확인, 커밋, 브랜치 관리를 할 수 있는 TUI 클라이언트"; then
     run "brew install lazygit"
   fi
@@ -232,14 +248,17 @@ else
     run "brew install --cask google-cloud-sdk"
   fi
 
-  # AI CLI Tools — 하나씩 설치
+  # AI CLI Tools
   if ask_install "gemini-cli" "Google Gemini 기반 AI 코딩 어시스턴트 CLI"; then
     run "brew install gemini-cli"
   fi
 
   if ask_install "opencode" "터미널에서 사용하는 오픈소스 AI 코딩 에이전트"; then
+    INSTALL_OPENCODE=true
     run "brew tap anomalyco/tap 2>/dev/null || true"
     run "brew install anomalyco/tap/opencode"
+  else
+    INSTALL_OPENCODE=false
   fi
 
   if ask_install "claude-code" "Anthropic Claude 기반 AI 코딩 어시스턴트 CLI"; then
@@ -266,10 +285,13 @@ else
     run "brew install --cask font-sarasa-gothic"
   fi
 
-  # Apps — 하나씩 설치
+  # Apps
   if ask_install "Docker Desktop" "컨테이너 기반 개발 환경 (Docker Engine, Docker Compose, kubectl 포함)"; then
+    INSTALL_DOCKER=true
     INSTALL_APPS=true
     run "brew install --cask docker"
+  else
+    INSTALL_DOCKER=false
   fi
 
   if ask_install "Visual Studio Code" "Microsoft의 코드 에디터 (확장 기능, 터미널, Git 통합)"; then
@@ -281,11 +303,10 @@ else
     INSTALL_APPS=true
     run "brew install --cask ghostty"
   fi
-
 fi
 
 # =============================================================================
-# 4. 수동 설치 앱 (Homebrew cask 미지원)
+# 5. 수동 설치 앱 (Homebrew cask 미지원)
 # =============================================================================
 if ! $INTERACTIVE; then
   install_openusage
@@ -296,39 +317,8 @@ else
 fi
 
 # =============================================================================
-# 5. Oh My Zsh + Shell Theme
-# =============================================================================
-INSTALL_SHELL_THEME=true
-
-if $INTERACTIVE; then
-  if ask_install "Shell Theme" \
-    "Oh My Zsh + zplug + Powerlevel10k — 쉘 테마 및 플러그인. .zshrc, .p10k.zsh 설정 파일도 함께 적용됩니다."; then
-    INSTALL_SHELL_THEME=true
-  else
-    INSTALL_SHELL_THEME=false
-  fi
-
-  # zplug는 Shell Theme의 일부이므로 여기서 설치
-  if $INSTALL_SHELL_THEME; then
-    run "brew install zplug"
-  fi
-fi
-
-if $INSTALL_SHELL_THEME; then
-  info "Oh My Zsh 확인..."
-  if [ -d "$HOME/.oh-my-zsh" ]; then
-    skip "Oh My Zsh"
-  else
-    info "Oh My Zsh 설치 중..."
-    run 'sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended'
-  fi
-fi
-
-# =============================================================================
 # 6. asdf 플러그인 및 런타임
 # =============================================================================
-INSTALL_RUNTIME=true
-
 if $INTERACTIVE; then
   if ask_install "Node.js Runtime" "asdf로 Node.js 24.2.0, Yarn 1.22.22 설치"; then
     INSTALL_RUNTIME=true
@@ -338,6 +328,8 @@ if $INTERACTIVE; then
 fi
 
 if $INSTALL_RUNTIME; then
+  backup_and_copy "$DOTFILES_DIR/configs/.tool-versions" "$HOME/.tool-versions"
+
   info "asdf 플러그인 확인..."
 
   install_asdf_plugin() {
@@ -358,47 +350,96 @@ if $INSTALL_RUNTIME; then
 fi
 
 # =============================================================================
-# 7. 심볼릭 링크 생성
+# 7. .zshrc 설정 적용
 # =============================================================================
-info "설정 파일 심볼릭 링크 생성..."
+info ".zshrc 설정 적용 중..."
 
-GHOSTTY_CONFIG_DIR="$HOME/Library/Application Support/com.mitchellh.ghostty"
+# 테마 설정 (Shell Theme 선택 시)
+if $INSTALL_SHELL_THEME; then
+  # p10k instant prompt를 .zshrc 최상단에 삽입
+  if ! $DRY_RUN; then
+    sed -i '' '1i\
+# --- Powerlevel10k Instant Prompt (최상단 유지) ---\
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then\
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"\
+fi\
+' "$HOME/.zshrc"
+  else
+    echo "  [dry-run] p10k instant prompt 삽입"
+  fi
+
+  # ZSH_THEME 비우기 (zplug에서 p10k 로드)
+  run "sed -i '' 's/ZSH_THEME=\"robbyrussell\"/ZSH_THEME=\"\"/' '$HOME/.zshrc'"
+
+  # zplug 설정 append
+  run "cat '$DOTFILES_DIR/configs/zshrc.theme' >> '$HOME/.zshrc'"
+
+  # p10k: -f 모드는 설정 복사, 인터랙티브는 configure 실행
+  if ! $INTERACTIVE; then
+    backup_and_copy "$DOTFILES_DIR/configs/.p10k.zsh" "$HOME/.p10k.zsh"
+  else
+    info "Powerlevel10k 테마 설정..."
+    run "zsh -ic 'source ~/.zshrc; p10k configure'"
+  fi
+fi
+
+# 조건부 설정 (설치한 도구에 따라)
+if $INSTALL_CORE_CLI; then
+  append_to_zshrc '# --- PATH: asdf ---
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
+
+# --- Aliases: eza ---
+alias ls='"'"'eza --icons --group-directories-first --git'"'"'
+alias ll='"'"'eza -lha --icons --group-directories-first --git --time-style=relative'"'"'
+alias lt='"'"'eza --tree --icons --git-ignore -I "node_modules|.git"'"'"'
+alias lt2='"'"'eza --tree --level=2 --icons --git-ignore -I "node_modules|.git"'"'"''
+fi
+
+if $INSTALL_OPENCODE; then
+  append_to_zshrc '# --- PATH & Alias: opencode ---
+export PATH="$HOME/.opencode/bin:$PATH"
+alias oc='"'"'opencode'"'"''
+fi
+
+if $INSTALL_DOCKER; then
+  append_to_zshrc '# --- Completions: Docker ---
+fpath=("$HOME/.docker/completions" $fpath)'
+fi
+
+# compinit (completions가 하나라도 있으면)
+if $INSTALL_CORE_CLI || $INSTALL_DOCKER; then
+  append_to_zshrc 'autoload -Uz compinit
+compinit'
+fi
+
+# 항상 추가
+append_to_zshrc '# --- 민감 정보 ---
+source ~/.zshrc.local 2>/dev/null'
+
+# =============================================================================
+# 8. 설정 파일 복사
+# =============================================================================
+GHOSTTY_CONFIG_DIR="$HOME/.config/ghostty"
 
 if ! $INTERACTIVE; then
-  # -f 모드: 전체 링크
-  backup_and_link "$DOTFILES_DIR/configs/.zshrc"         "$HOME/.zshrc"
-  backup_and_link "$DOTFILES_DIR/configs/.p10k.zsh"      "$HOME/.p10k.zsh"
-  backup_and_link "$DOTFILES_DIR/configs/.gitconfig"      "$HOME/.gitconfig"
-  backup_and_link "$DOTFILES_DIR/configs/.tool-versions"  "$HOME/.tool-versions"
+  backup_and_copy "$DOTFILES_DIR/configs/.gitconfig"      "$HOME/.gitconfig"
   run "mkdir -p '$GHOSTTY_CONFIG_DIR'"
-  backup_and_link "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
-  # VSCode 설정
+  backup_and_copy "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
   if command -v code &>/dev/null; then
     VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
     run "mkdir -p '$VSCODE_USER_DIR'"
-    backup_and_link "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
-    backup_and_link "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
+    backup_and_copy "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
+    backup_and_copy "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
   fi
 else
-  # 인터랙티브 모드: Shell Theme 설치 시에만 .zshrc, .p10k.zsh 링크
-  if $INSTALL_SHELL_THEME; then
-    backup_and_link "$DOTFILES_DIR/configs/.zshrc"    "$HOME/.zshrc"
-    backup_and_link "$DOTFILES_DIR/configs/.p10k.zsh" "$HOME/.p10k.zsh"
-  fi
-  # .tool-versions는 런타임 설치 시에만
-  if $INSTALL_RUNTIME; then
-    backup_and_link "$DOTFILES_DIR/configs/.tool-versions" "$HOME/.tool-versions"
-  fi
-  # Ghostty 설정은 Apps 설치 시에만
   if $INSTALL_APPS; then
     run "mkdir -p '$GHOSTTY_CONFIG_DIR'"
-    backup_and_link "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
+    backup_and_copy "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
   fi
-  # .gitconfig는 인터랙티브에서 직접 입력으로 처리 (아래 섹션)
 fi
 
 # =============================================================================
-# 8. Git 설정
+# 9. Git 설정
 # =============================================================================
 if $INTERACTIVE; then
   echo ""
@@ -434,7 +475,7 @@ if $INTERACTIVE; then
 fi
 
 # =============================================================================
-# 9. VSCode 설정 (인터랙티브 전용)
+# 10. VSCode 설정 (인터랙티브 전용)
 # =============================================================================
 if $INTERACTIVE && command -v code &>/dev/null; then
   VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
@@ -442,14 +483,13 @@ if $INTERACTIVE && command -v code &>/dev/null; then
   if ask_install "VSCode 설정" \
     "에디터 설정(settings.json), 키바인딩(keybindings.json) 적용" "n"; then
     run "mkdir -p '$VSCODE_USER_DIR'"
-    backup_and_link "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
-    backup_and_link "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
+    backup_and_copy "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
+    backup_and_copy "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
   fi
-
 fi
 
 # =============================================================================
-# 10. macOS 시스템 설정
+# 11. macOS 시스템 설정
 # =============================================================================
 NEED_DOCK_RESTART=false
 NEED_FINDER_RESTART=false
@@ -490,12 +530,11 @@ if ask_install "macOS: Hot Corner" "우하단 → 빠른 메모" "n"; then
   NEED_DOCK_RESTART=true
 fi
 
-# 변경사항 반영
 if $NEED_DOCK_RESTART; then run "killall Dock 2>/dev/null || true"; fi
 if $NEED_FINDER_RESTART; then run "killall Finder 2>/dev/null || true"; fi
 
 # =============================================================================
-# 11. ~/.zshrc.local 템플릿 생성
+# 12. ~/.zshrc.local 템플릿 생성
 # =============================================================================
 if [ ! -f "$HOME/.zshrc.local" ]; then
   info "~/.zshrc.local 템플릿 생성..."
@@ -515,7 +554,7 @@ else
 fi
 
 # =============================================================================
-# 12. 완료
+# 13. 완료
 # =============================================================================
 echo ""
 echo "========================================="

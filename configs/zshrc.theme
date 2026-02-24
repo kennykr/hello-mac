@@ -1,0 +1,21 @@
+
+# =============================================================================
+# zplug — 플러그인 매니저
+# =============================================================================
+export ZPLUG_HOME="$(brew --prefix zplug)"
+source "$ZPLUG_HOME/init.zsh"
+
+zplug "plugins/git",  from:oh-my-zsh
+zplug "plugins/yarn", from:oh-my-zsh
+zplug "romkatv/powerlevel10k", as:theme, from:github, depth:1
+
+if ! zplug check --verbose; then
+  printf "Install? [y/N]: "
+  if read -q; then
+    echo; zplug install
+  fi
+fi
+
+zplug load
+
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
