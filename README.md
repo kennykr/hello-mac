@@ -24,7 +24,8 @@ bash install.sh -f   # 전체 자동 설치
 | 🔤 Font: D2Coding Nerd    | 한글 코딩 전용 폰트 (리가처)                         |   ✅   |
 | 🔤 Font: Monoplex KR Nerd | IBM Plex Mono + 한글 합성 (Nerd Font)                |   ✅   |
 | 🔤 Font: Sarasa Gothic    | CJK 다국어 고딕체                                    |   ✅   |
-| 💻 Apps                   | Visual Studio Code, Ghostty (개별 선택)              |   ✅   |
+| 💻 Apps                   | Docker, Visual Studio Code, Ghostty (개별 선택)      |   ✅   |
+| 📱 수동 설치 앱           | OpenUsage — AI 사용량 추적 (GitHub DMG)              |   ✅   |
 | 🎨 Shell Theme            | Oh My Zsh + zplug + Powerlevel10k                    |   ✅   |
 | ⬢ Node.js Runtime         | asdf로 Node.js, Yarn 설치                            |   ✅   |
 | 👤 Git 설정               | 이름/이메일이 없으면 입력                            |  입력  |
@@ -52,6 +53,8 @@ bash install.sh -f   # 전체 자동 설치
 hello-mac/
 ├── install.sh              # 메인 설치 스크립트
 ├── Brewfile                # Homebrew 패키지 목록
+├── scripts/
+│   └── install_dmg.sh      # DMG 앱 설치 헬퍼
 ├── configs/
 │   ├── .zshrc              # Zsh 설정
 │   ├── .p10k.zsh           # Powerlevel10k 테마
