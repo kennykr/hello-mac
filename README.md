@@ -15,21 +15,23 @@ bash install.sh -f   # 전체 자동 설치
 
 ## 📦 무엇이 설치되나요?
 
-| 카테고리                  | 내용                                  |  기본  |
-| ------------------------- | ------------------------------------- | :----: |
-| 🔧 Core CLI               | asdf, eza, gh, lazygit, pandoc 등     |   ✅   |
-| ☁️ Azure                  | azure-cli                             |   —    |
-| 🔤 Font: D2Coding Nerd    | 한글 코딩 전용 폰트 (리가처)          |   ✅   |
-| 🔤 Font: Monoplex KR Nerd | IBM Plex Mono + 한글 합성 (Nerd Font) |   ✅   |
-| 🔤 Font: Sarasa Gothic    | CJK 다국어 고딕체                     |   ✅   |
-| 💻 Apps                   | Visual Studio Code, Ghostty           |   ✅   |
-| 🎨 Shell Theme            | Oh My Zsh + zplug + Powerlevel10k     |   ✅   |
-| ⬢ Node.js Runtime         | asdf로 Node.js, Yarn 설치             |   ✅   |
-| 👤 Git 설정               | 이름/이메일이 없으면 입력             |  입력  |
-| 🆚 VSCode 설정            | settings.json, keybindings.json       |   —    |
-| 🍎 macOS 설정             | Dock, Finder, 키보드, 트랙패드 등     | 항목별 |
+| 카테고리                  | 내용                                                 |  기본  |
+| ------------------------- | ---------------------------------------------------- | :----: |
+| 🔧 Core CLI               | asdf, coreutils, eza, gh, gnupg                      |   ✅   |
+| 🛠️ Utilities              | lazygit, imagemagick, mole (개별 선택)               |   ✅   |
+| ☁️ Cloud CLI              | azure-cli, awscli, google-cloud-sdk (개별 선택)      |   ✅   |
+| 🤖 AI CLI Tools           | gemini-cli, opencode, claude-code, codex (개별 선택) |   ✅   |
+| 🔤 Font: D2Coding Nerd    | 한글 코딩 전용 폰트 (리가처)                         |   ✅   |
+| 🔤 Font: Monoplex KR Nerd | IBM Plex Mono + 한글 합성 (Nerd Font)                |   ✅   |
+| 🔤 Font: Sarasa Gothic    | CJK 다국어 고딕체                                    |   ✅   |
+| 💻 Apps                   | Visual Studio Code, Ghostty (개별 선택)              |   ✅   |
+| 🎨 Shell Theme            | Oh My Zsh + zplug + Powerlevel10k                    |   ✅   |
+| ⬢ Node.js Runtime         | asdf로 Node.js, Yarn 설치                            |   ✅   |
+| 👤 Git 설정               | 이름/이메일이 없으면 입력                            |  입력  |
+| 🆚 VSCode 설정            | settings.json, keybindings.json                      |   ✅   |
+| 🍎 macOS 설정             | Dock, Finder, 키보드, 트랙패드 등                    | 항목별 |
 
-> ✅ = 엔터만 치면 설치 / — = 기본 건너뜀 (원하면 `y`)
+> ✅ = 엔터만 치면 설치
 
 ## 🍎 macOS 설정 상세
 

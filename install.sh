@@ -173,19 +173,60 @@ if ! $INTERACTIVE; then
   INSTALL_APPS=true
 else
   # --- 인터랙티브 모드: 카테고리별 개별 설치 ---
+
+  # Core CLI Tools — 통으로 설치
   if ask_install "Core CLI Tools" \
-    "asdf(런타임 버전 관리), eza(ls 대체), gh(GitHub CLI), lazygit(Git TUI), pandoc(문서 변환) 등 기본 CLI 도구"; then
-    for pkg in asdf coreutils eza gawk gh gnupg imagemagick lazygit pandoc; do
+    "asdf(런타임 버전 관리), coreutils(GNU 핵심 유틸리티), eza(ls 대체), gh(GitHub CLI), gnupg(GPG 암호화)"; then
+    for pkg in asdf coreutils eza gh gnupg; do
       run "brew install $pkg"
     done
-    run "brew tap anomalyco/tap 2>/dev/null || true"
+  fi
+
+  # Utilities — 하나씩 설치
+  if ask_install "lazygit" "터미널에서 Git 상태 확인, 커밋, 브랜치 관리를 할 수 있는 TUI 클라이언트"; then
+    run "brew install lazygit"
+  fi
+
+  if ask_install "imagemagick" "CLI에서 이미지 포맷 변환, 리사이즈, 크롭 등 일괄 처리"; then
+    run "brew install imagemagick"
+  fi
+
+  if ask_install "mole" "macOS 시스템 캐시 정리, 불필요한 파일 제거 등 최적화 도구"; then
     run "brew install mole"
   fi
 
-  if ask_install "Azure" "azure-cli — Azure 클라우드 CLI" "n"; then
+  # Cloud CLI
+  if ask_install "azure-cli" "Azure 리소스 생성, 배포, 모니터링을 위한 공식 CLI"; then
     run "brew install azure-cli"
   fi
 
+  if ask_install "awscli" "AWS 리소스 관리를 위한 공식 CLI"; then
+    run "brew install awscli"
+  fi
+
+  if ask_install "google-cloud-sdk" "GCP 리소스 관리를 위한 공식 CLI"; then
+    run "brew install --cask google-cloud-sdk"
+  fi
+
+  # AI CLI Tools — 하나씩 설치
+  if ask_install "gemini-cli" "Google Gemini 기반 AI 코딩 어시스턴트 CLI"; then
+    run "brew install gemini-cli"
+  fi
+
+  if ask_install "opencode" "터미널에서 사용하는 오픈소스 AI 코딩 에이전트"; then
+    run "brew tap anomalyco/tap 2>/dev/null || true"
+    run "brew install anomalyco/tap/opencode"
+  fi
+
+  if ask_install "claude-code" "Anthropic Claude 기반 AI 코딩 어시스턴트 CLI"; then
+    run "brew install --cask claude-code"
+  fi
+
+  if ask_install "codex" "OpenAI Codex 기반 AI 코딩 어시스턴트 CLI"; then
+    run "brew install --cask codex"
+  fi
+
+  # Fonts
   if ask_install "Font: D2Coding Nerd" \
     "한글 코딩 전용 폰트 (리가처 지원). 미리보기: https://github.com/kelvinks/D2Coding_Nerd"; then
     run "brew install --cask font-d2coding-nerd-font"
@@ -201,9 +242,14 @@ else
     run "brew install --cask font-sarasa-gothic"
   fi
 
-  if ask_install "Apps" "Visual Studio Code(에디터), Ghostty(터미널)"; then
+  # Apps — 하나씩 설치
+  if ask_install "Visual Studio Code" "Microsoft의 코드 에디터 (확장 기능, 터미널, Git 통합)"; then
     INSTALL_APPS=true
     run "brew install --cask visual-studio-code"
+  fi
+
+  if ask_install "Ghostty" "GPU 가속 기반 빠른 터미널 에뮬레이터"; then
+    INSTALL_APPS=true
     run "brew install --cask ghostty"
   fi
 fi
@@ -285,6 +331,13 @@ if ! $INTERACTIVE; then
   backup_and_link "$DOTFILES_DIR/configs/.tool-versions"  "$HOME/.tool-versions"
   run "mkdir -p '$GHOSTTY_CONFIG_DIR'"
   backup_and_link "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
+  # VSCode 설정
+  if command -v code &>/dev/null; then
+    VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
+    run "mkdir -p '$VSCODE_USER_DIR'"
+    backup_and_link "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
+    backup_and_link "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
+  fi
 else
   # 인터랙티브 모드: Shell Theme 설치 시에만 .zshrc, .p10k.zsh 링크
   if $INSTALL_SHELL_THEME; then
