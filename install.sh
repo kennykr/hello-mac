@@ -39,8 +39,10 @@ if $DRY_RUN; then
 fi
 
 # --- Helpers ---
-info()  { echo "==> $*"; }
-skip()  { echo "  -> 이미 설치됨, 건너뜀: $*"; }
+info()  { echo "🔵 $*"; }
+warn()  { echo "⚠️  $*"; }
+error() { echo "❌ $*"; }
+skip()  { echo "  ⏭️  이미 설치됨, 건너뜀: $*"; }
 run()   {
   if $DRY_RUN; then
     echo "  [dry-run] $*"
@@ -54,11 +56,11 @@ backup_and_copy() {
   local dest="$2"
 
   if [ -e "$dest" ]; then
-    info "기존 파일 백업: $dest -> ${dest}.bak"
+    info "기존 파일 백업 중: $dest -> ${dest}.bak 📂"
     run "mv '$dest' '${dest}.bak'"
   fi
 
-  info "설정 파일 복사: $src -> $dest"
+  info "설정 파일 복사 중: $src -> $dest 📝"
   run "cp '$src' '$dest'"
 }
 
@@ -79,13 +81,13 @@ ask_install() {
   if ! $INTERACTIVE; then return 0; fi
 
   echo ""
-  echo "[$category]"
+  echo "📦 [$category]"
   echo "  $description"
   local prompt
   if [[ "$default" == "y" ]]; then
-    prompt="  설치할까요? [Y/n]: "
+    prompt="  설치할까요? ✨ [Y/n]: "
   else
-    prompt="  설치할까요? [y/N]: "
+    prompt="  설치할까요? ✨ [y/N]: "
   fi
 
   read -rp "$prompt" answer
@@ -98,33 +100,33 @@ ask_install() {
 # =============================================================================
 if $INTERACTIVE; then
   echo ""
-  echo "==> Mac 개발 환경 설정을 시작합니다."
+  echo "🚀 Mac 개발 환경 설정을 시작합니다! 잠시만 기다려 주세요. ✨"
   echo ""
 else
-  echo "==> Mac 개발 환경 전체 자동 설치를 시작합니다. (-f 모드)"
+  echo "🚀 Mac 개발 환경 전체 자동 설치를 시작합니다! (-f 모드) ⚡️"
 fi
 
 # =============================================================================
 # 1. Xcode Command Line Tools
 # =============================================================================
-info "Xcode Command Line Tools 확인..."
+info "🔍 Xcode Command Line Tools 확인 중..."
 if xcode-select -p &>/dev/null; then
-  skip "Xcode CLT"
+  skip "Xcode CLT ✅"
 else
-  info "Xcode Command Line Tools 설치 중..."
+  info "🛠️ Xcode Command Line Tools 설치 중..."
   run "xcode-select --install"
-  echo "  설치 완료 후 이 스크립트를 다시 실행해주세요."
+  echo "  🔔 설치 완료 후 이 스크립트를 다시 실행해 주세요!"
   exit 0
 fi
 
 # =============================================================================
 # 2. Homebrew
 # =============================================================================
-info "Homebrew 확인..."
+info "🍺 Homebrew 확인 중..."
 if command -v brew &>/dev/null; then
-  skip "Homebrew"
+  skip "Homebrew ✅"
 else
-  info "Homebrew 설치 중..."
+  info "🍺 Homebrew 설치 중... (조금 오래 걸릴 수 있어요! ☕️)"
   run '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"'
   if [[ "$(uname -m)" == "arm64" ]]; then
     if $DRY_RUN; then
@@ -181,7 +183,7 @@ install_monoplex_kr_nerd() {
 # =============================================================================
 if $INTERACTIVE; then
   if ask_install "Shell Theme" \
-    "Oh My Zsh + zplug + Powerlevel10k — 쉘 테마 및 플러그인"; then
+    "Oh My Zsh + zplug + Powerlevel10k — 쉘 테마 및 플러그인 ✨"; then
     INSTALL_SHELL_THEME=true
   else
     INSTALL_SHELL_THEME=false
@@ -206,7 +208,7 @@ fi
 # 4. Homebrew 패키지
 # =============================================================================
 if ! $INTERACTIVE; then
-  info "Homebrew 패키지 설치 (Brewfile)..."
+  info "📦 Homebrew 패키지 설치 중 (Brewfile)..."
   run "brew bundle --file='$DOTFILES_DIR/Brewfile'"
   install_monoplex_kr_nerd
   INSTALL_APPS=true
@@ -330,14 +332,14 @@ fi
 if $INSTALL_RUNTIME; then
   backup_and_copy "$DOTFILES_DIR/configs/.tool-versions" "$HOME/.tool-versions"
 
-  info "asdf 플러그인 확인..."
+  info "🔍 asdf 플러그인 확인 중..."
 
   install_asdf_plugin() {
     local plugin="$1"
     if asdf plugin list 2>/dev/null | grep -q "^${plugin}$"; then
-      skip "asdf plugin: $plugin"
+      skip "asdf plugin: $plugin ✅"
     else
-      info "asdf plugin 추가: $plugin"
+      info "➕ asdf plugin 추가: $plugin"
       run "asdf plugin add $plugin"
     fi
   }
@@ -345,14 +347,14 @@ if $INSTALL_RUNTIME; then
   install_asdf_plugin "nodejs"
   install_asdf_plugin "yarn"
 
-  info "asdf 런타임 설치..."
+  info "🚀 asdf 런타임 설치 중... (기다려 주세요! ⏳)"
   run "asdf install"
 fi
 
 # =============================================================================
 # 7. .zshrc 설정 적용
 # =============================================================================
-info ".zshrc 설정 적용 중..."
+info "📝 .zshrc 설정 적용 중..."
 
 # 테마 설정 (Shell Theme 선택 시)
 if $INSTALL_SHELL_THEME; then
@@ -443,7 +445,7 @@ fi
 # =============================================================================
 if $INTERACTIVE; then
   echo ""
-  echo "[Git 설정]"
+  echo "🌳 [Git 설정]"
 
   existing_git_name="$(git config --global --get user.name || true)"
   existing_git_email="$(git config --global --get user.email || true)"
@@ -481,7 +483,7 @@ if $INTERACTIVE && command -v code &>/dev/null; then
   VSCODE_USER_DIR="$HOME/Library/Application Support/Code/User"
 
   if ask_install "VSCode 설정" \
-    "에디터 설정(settings.json), 키바인딩(keybindings.json) 적용" "n"; then
+    "에디터 설정(settings.json), 키바인딩(keybindings.json) 적용 ⌨️" "n"; then
     run "mkdir -p '$VSCODE_USER_DIR'"
     backup_and_copy "$DOTFILES_DIR/configs/vscode/settings.json"    "$VSCODE_USER_DIR/settings.json"
     backup_and_copy "$DOTFILES_DIR/configs/vscode/keybindings.json" "$VSCODE_USER_DIR/keybindings.json"
@@ -494,12 +496,12 @@ fi
 NEED_DOCK_RESTART=false
 NEED_FINDER_RESTART=false
 
-if ask_install "macOS: Dock 자동 숨기기" "Dock을 사용하지 않을 때 자동으로 숨깁니다"; then
+if ask_install "macOS: Dock 자동 숨기기" "Dock을 사용하지 않을 때 자동으로 숨깁니다 💨"; then
   run "defaults write com.apple.dock autohide -bool true"
   NEED_DOCK_RESTART=true
 fi
 
-if ask_install "macOS: Finder 설정" "리스트 뷰 기본, 새 창에서 Downloads 열기"; then
+if ask_install "macOS: Finder 설정" "리스트 뷰 기본, 새 창에서 Downloads 열기 📂"; then
   run "defaults write com.apple.finder FXPreferredViewStyle -string 'Nlsv'"
   run "defaults write com.apple.finder NewWindowTarget -string 'PfLo'"
   run "defaults write com.apple.finder NewWindowTargetPath -string 'file://\$HOME/Downloads/'"
@@ -537,7 +539,7 @@ if $NEED_FINDER_RESTART; then run "killall Finder 2>/dev/null || true"; fi
 # 12. ~/.zshrc.local 템플릿 생성
 # =============================================================================
 if [ ! -f "$HOME/.zshrc.local" ]; then
-  info "~/.zshrc.local 템플릿 생성..."
+  info "🔑 ~/.zshrc.local 템플릿 생성 중..."
   if ! $DRY_RUN; then
     cat > "$HOME/.zshrc.local" << 'TEMPLATE'
 # ~/.zshrc.local — 민감 정보 보관 (git에 포함되지 않음)
@@ -557,11 +559,13 @@ fi
 # 13. 완료
 # =============================================================================
 echo ""
-echo "========================================="
-echo "  hello-mac 설치 완료!"
-echo "========================================="
+echo "✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨"
+echo "      🎊 hello-mac 설치 완료! 🎊"
+echo "✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨"
 echo ""
-echo "다음 단계:"
-echo "  1. ~/.zshrc.local 에 토큰/비밀값 설정"
-echo "  2. 터미널 재시작 또는: source ~/.zshrc"
+echo "✅ 다음 단계:"
+echo "  1️⃣  ~/.zshrc.local 에 필요한 토큰/비밀값 설정 🔑"
+echo "  2️⃣  터미널 재시작! (또는: source ~/.zshrc) 🔄"
+echo ""
+echo "오늘도 즐거운 코딩 하세요! 💻✨"
 echo ""
