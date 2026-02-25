@@ -424,7 +424,6 @@ source ~/.zshrc.local 2>/dev/null'
 GHOSTTY_CONFIG_DIR="$HOME/.config/ghostty"
 
 if ! $INTERACTIVE; then
-  backup_and_copy "$DOTFILES_DIR/configs/.gitconfig"      "$HOME/.gitconfig"
   run "mkdir -p '$GHOSTTY_CONFIG_DIR'"
   backup_and_copy "$DOTFILES_DIR/configs/ghostty/config" "$GHOSTTY_CONFIG_DIR/config"
   if command -v code &>/dev/null; then
@@ -465,10 +464,18 @@ if $INTERACTIVE; then
 
     if [[ -n "$git_name" && -n "$git_email" ]]; then
       if [[ -z "$existing_git_name" ]]; then
-        run "git config --global user.name '$git_name'"
+        if $DRY_RUN; then
+          echo "  [dry-run] git config --global user.name ..."
+        else
+          git config --global user.name "$git_name"
+        fi
       fi
       if [[ -z "$existing_git_email" ]]; then
-        run "git config --global user.email '$git_email'"
+        if $DRY_RUN; then
+          echo "  [dry-run] git config --global user.email ..."
+        else
+          git config --global user.email "$git_email"
+        fi
       fi
     else
       echo "  -> Git 설정을 건너뜁니다. (이름 또는 이메일이 비어있음)"

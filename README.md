@@ -6,21 +6,16 @@
 
 ## 🚀 빠른 시작
 
+항목별 선택 설치 (추천):
+
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kennykr/hello-mac/main/hello-mac.sh)"
 ```
 
-전체 자동 설치 (확인 없이):
+전체 자동 설치 (확인 없이 모두 설치):
 
 ```bash
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/kennykr/hello-mac/main/hello-mac.sh)" -- -f
-```
-
-이미 clone한 경우:
-
-```bash
-cd ~/hello-mac
-bash install.sh
 ```
 
 ## 📦 무엇이 설치되나요?
@@ -39,7 +34,7 @@ bash install.sh
 | 🎨 Shell Theme            | Oh My Zsh + zplug + Powerlevel10k                    |   ✅   |
 | ⬢ Node.js Runtime         | asdf로 Node.js, Yarn 설치                            |   ✅   |
 | 👤 Git 설정               | 이름/이메일이 없으면 입력                            |  입력  |
-| 🆚 VSCode 설정            | settings.json, keybindings.json                      |   ✅   |
+| 🆚 VSCode 설정            | settings.json, keybindings.json                      |   —    |
 | 🍎 macOS 설정             | Dock, Finder, 키보드, 트랙패드 등                    | 항목별 |
 
 > ✅ = 엔터만 치면 설치
@@ -69,7 +64,6 @@ hello-mac/
 ├── configs/
 │   ├── zshrc.theme         # zplug + Powerlevel10k 설정 (append)
 │   ├── .p10k.zsh           # Powerlevel10k 테마 (-f 모드 전용)
-│   ├── .gitconfig          # Git 사용자 설정
 │   ├── .tool-versions      # asdf 글로벌 버전
 │   ├── ghostty/config      # Ghostty 터미널 설정 (→ ~/.config/ghostty/)
 │   └── vscode/
@@ -90,8 +84,8 @@ hello-mac/
 | 5   | 수동 설치 앱            | OpenUsage 자동 설치                       | 설치 여부 선택                                     |
 | 6   | asdf 런타임             | `.tool-versions` 복사 + 설치              | 설치 여부 선택                                     |
 | 7   | .zshrc 설정             | 테마 + 전체 설정 append, `.p10k.zsh` 복사 | 테마 + 설치한 도구만 append, `p10k configure` 실행 |
-| 8   | 설정 파일 복사          | .gitconfig, Ghostty, VSCode 복사          | Ghostty만 (Apps 설치 시)                           |
-| 9   | Git 설정                | `.gitconfig` 복사                         | 이름/이메일 입력                                   |
+| 8   | 설정 파일 복사          | Ghostty, VSCode 복사                      | Ghostty만 (Apps 설치 시)                           |
+| 9   | Git 설정                | —                                         | 이름/이메일 입력                                   |
 | 10  | VSCode 설정             | 8번에서 처리                              | 설치 여부 선택 (기본 N)                            |
 | 11  | macOS 설정              | 전체 적용                                 | 항목별 선택                                        |
 | 12  | `.zshrc.local`          | 템플릿 생성                               | 동일                                               |

@@ -17,8 +17,14 @@ trap 'rm -rf "$INSTALL_DIR"' EXIT
 if ! xcode-select -p &>/dev/null; then
   echo "🔵 Xcode Command Line Tools 설치 중... (팝업에서 설치를 눌러주세요)"
   xcode-select --install
+  WAIT=0
   until xcode-select -p &>/dev/null; do
     sleep 5
+    WAIT=$((WAIT + 5))
+    if [ "$WAIT" -ge 600 ]; then
+      echo "❌ Xcode Command Line Tools 설치 시간 초과 (10분). 설치 완료 후 다시 실행해주세요."
+      exit 1
+    fi
   done
   echo "🟢 Xcode Command Line Tools 설치 완료!"
 fi
