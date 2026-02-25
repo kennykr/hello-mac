@@ -7,10 +7,20 @@
 ## 🚀 빠른 시작
 
 ```bash
-git clone https://github.com/kennykr/hello-mac.git ~/hello-mac
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/kennykr/hello-mac/main/hello-mac.sh)"
+```
+
+전체 자동 설치 (확인 없이):
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/kennykr/hello-mac/main/hello-mac.sh)" -- -f
+```
+
+이미 clone한 경우:
+
+```bash
 cd ~/hello-mac
-bash install.sh      # 인터랙티브 모드 (기본) — 항목별 선택
-bash install.sh -f   # 전체 자동 설치
+bash install.sh
 ```
 
 ## 📦 무엇이 설치되나요?
@@ -51,6 +61,7 @@ bash install.sh -f   # 전체 자동 설치
 
 ```text
 hello-mac/
+├── hello-mac.sh            # 원라인 부트스트랩 (curl | bash)
 ├── install.sh              # 메인 설치 스크립트
 ├── Brewfile                # Homebrew 패키지 목록
 ├── scripts/
