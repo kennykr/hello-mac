@@ -24,6 +24,7 @@ brew "azure-cli"
 # --- AI CLI Tools (선택 — 필요 없으면 주석 처리) ---
 tap "anomalyco/tap"
 brew "anomalyco/tap/opencode"
+brew "agent-browser"
 cask "claude-code"
 cask "codex"
 brew "gemini-cli"

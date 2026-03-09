@@ -263,6 +263,10 @@ else
     INSTALL_OPENCODE=false
   fi
 
+  if ask_install "agent-browser" "브라우저 자동화 AI 에이전트 CLI"; then
+    run "brew install agent-browser"
+  fi
+
   if ask_install "claude-code" "Anthropic Claude 기반 AI 코딩 어시스턴트 CLI"; then
     run "brew install --cask claude-code"
   fi
