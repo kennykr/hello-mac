@@ -21,11 +21,12 @@ brew "azure-cli"
 # brew "awscli"
 # brew "gcloud-sdk"
 
-# --- AI CLI Tools (선택 — 필요 없으면 주석 처리) ---
+# --- AI Tools (선택 — 필요 없으면 주석 처리) ---
 tap "anomalyco/tap"
 brew "anomalyco/tap/opencode"
 brew "agent-browser"
 cask "claude-code"
+cask "claudebar"
 cask "codex"
 brew "gemini-cli"
 

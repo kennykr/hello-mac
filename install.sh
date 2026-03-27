@@ -250,7 +250,7 @@ else
     run "brew install --cask google-cloud-sdk"
   fi
 
-  # AI CLI Tools
+  # AI Tools
   if ask_install "gemini-cli" "Google Gemini 기반 AI 코딩 어시스턴트 CLI"; then
     run "brew install gemini-cli"
   fi
@@ -269,6 +269,10 @@ else
 
   if ask_install "claude-code" "Anthropic Claude 기반 AI 코딩 어시스턴트 CLI"; then
     run "brew install --cask claude-code"
+  fi
+
+  if ask_install "claudebar" "AI 코딩 어시스턴트 사용량을 메뉴 막대에서 모니터링하는 앱"; then
+    run "brew install --cask claudebar"
   fi
 
   if ask_install "codex" "OpenAI Codex 기반 AI 코딩 어시스턴트 CLI"; then

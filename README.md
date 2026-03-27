@@ -25,7 +25,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/kennykr/hello-mac/main/h
 | 🔧 Core CLI               | asdf, coreutils, eza, gh, gnupg                                     |   ✅   |
 | 🛠️ Utilities              | lazygit, imagemagick, mole (개별 선택)                              |   ✅   |
 | ☁️ Cloud CLI              | azure-cli, awscli, google-cloud-sdk (개별 선택)                     |   ✅   |
-| 🤖 AI CLI Tools           | gemini-cli, opencode, agent-browser, claude-code, codex (개별 선택) |   ✅   |
+| 🤖 AI CLI Tools           | gemini-cli, opencode, agent-browser, claude-code, claudebar, codex (개별 선택) |   ✅   |
 | 🔤 Font: D2Coding Nerd    | 한글 코딩 전용 폰트 (리가처)                                        |   ✅   |
 | 🔤 Font: Monoplex KR Nerd | IBM Plex Mono + 한글 합성 (Nerd Font)                               |   ✅   |
 | 🔤 Font: Sarasa Gothic    | CJK 다국어 고딕체                                                   |   ✅   |
